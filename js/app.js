@@ -1,0 +1,320 @@
+// app.js
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const showRegisterBtn = document.getElementById('showRegister');
+    const showLoginBtn = document.getElementById('showLogin');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const loginUsernameInput = document.getElementById('loginUsername');
+    const registerUsernameInput = document.getElementById('registerUsername');
+    const postText = document.getElementById('postText');
+    const postImage = document.getElementById('postImage');
+    const postBtn = document.getElementById('postBtn');
+    const feed = document.getElementById('feed');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileName = document.getElementById('profileName');
+    const avatarInput = document.getElementById('avatarInput');
+    const nameInput = document.getElementById('nameInput');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const personalitySelect = document.getElementById('personalitySelect');
+    const savePersonalityBtn = document.getElementById('savePersonalityBtn');
+    const imagePreview = document.getElementById('imagePreview');
+
+    // Event Listeners for Login/Registration
+    if (showRegisterBtn) {
+        showRegisterBtn.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
+    }
+
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+    }
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            const username = loginUsernameInput.value;
+            if (loginUser(username)) {
+                window.location.href = 'home.html';
+            } else {
+                alert('User not found.');
+            }
+        });
+    }
+
+    if (registerBtn) {
+        registerBtn.addEventListener('click', () => {
+            const username = registerUsernameInput.value;
+            if (registerUser(username)) {
+                window.location.href = 'home.html';
+            } else {
+                alert('Username already exists.');
+            }
+        });
+    }
+
+    // Event Listener for Logout
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            logoutUser();
+            window.location.href = 'index.html';
+        });
+    }
+
+    // Load User Data and Posts (if logged in)
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        if (feed) {
+            loadPosts(currentUser);
+        }
+        if (profileAvatar) {
+            loadProfile(currentUser);
+        }
+    } else if (window.location.pathname.endsWith('home.html') || window.location.pathname.endsWith('profile.html')) {
+        window.location.href = 'index.html';
+    }
+
+    // Event Listener for Post Button
+    if (postBtn) {
+        postBtn.addEventListener('click', () => {
+            const text = postText.value;
+            const files = postImage.files;
+            const images = [];
+    
+            if (files.length > 0) {
+                const readerPromises = [];
+    
+                for (let i = 0; i < Math.min(files.length, 9); i++) {
+                    const reader = new FileReader();
+                    readerPromises.push(new Promise(resolve => {
+                        reader.onload = (e) => {
+                            images.push(e.target.result);
+                            resolve();
+                        };
+                        reader.readAsDataURL(files[i]);
+                    }));
+                }
+    
+                Promise.all(readerPromises).then(() => {
+                    // Call createPost *after* images are loaded
+                    createPost(currentUser, text, images);
+                    postText.value = '';
+                    postImage.value = '';
+                    imagePreview.innerHTML = ''; // Clear preview after posting
+                    imagePreview.className = 'image-preview-grid';
+                    loadPosts(currentUser);
+                });
+            } else {
+                createPost(currentUser, text, images);
+                postText.value = '';
+                loadPosts(currentUser);
+            }
+        });
+    }
+
+    // Event Listener for Profile Save Button
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', () => {
+            const newName = nameInput.value;
+            const newAvatar = avatarInput.files[0];
+
+            if (newAvatar) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    updateProfile(currentUser, newName, e.target.result);
+                    loadProfile(currentUser);
+                }
+                reader.readAsDataURL(newAvatar);
+            } else {
+                updateProfile(currentUser, newName, null);
+                loadProfile(currentUser);
+            }
+        });
+    }
+
+    // Event Listener for Personality Save Button
+    if (savePersonalityBtn) {
+        savePersonalityBtn.addEventListener('click', () => {
+            const selectedPersonality = personalitySelect.value;
+            updatePersonality(currentUser, selectedPersonality);
+        });
+    }
+
+    // Load Profile Data
+    function loadProfile(username) {
+        const userProfile = getUserProfile(username);
+        profileName.textContent = userProfile.name || username;
+        profileAvatar.src = userProfile.avatar || 'img/default-avatar.png';
+        nameInput.value = userProfile.name || '';
+        personalitySelect.value = userProfile.personality || 'supporter';
+    }
+
+    // Handle image preview
+    if (postImage) {
+        postImage.addEventListener('change', () => {
+            imagePreview.innerHTML = '';
+            const files = postImage.files;
+            const numFiles = Math.min(files.length, 9);
+            imagePreview.className = `image-preview-grid grid-${numFiles}`;
+
+            for (let i = 0; i < numFiles; i++) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imgContainer = document.createElement('div');
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    imgContainer.appendChild(img);
+                    imagePreview.appendChild(imgContainer);
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        });
+    }
+
+    // Load Posts into Feed
+    async function loadPosts(username) {
+        const posts = getPosts(username);
+        const names = await loadNames(); // Load robot names
+        const prompts = await loadPrompts(); // Load personality prompts
+        feed.innerHTML = ''; // Clear existing posts
+
+        posts.forEach(async (post) => {
+            const postElement = document.createElement('div');
+            postElement.classList.add('post');
+
+            const postHeader = document.createElement('div');
+            postHeader.classList.add('post-header');
+            const avatarImg = document.createElement('img');
+            const userProfile = getUserProfile(username);
+            avatarImg.src = userProfile.avatar || 'img/default-avatar.png';
+            avatarImg.alt = 'User Avatar';
+            const usernameElement = document.createElement('span');
+            usernameElement.textContent = userProfile.name || username;
+            postHeader.appendChild(avatarImg);
+            postHeader.appendChild(usernameElement);
+
+            const postContent = document.createElement('div');
+            postContent.classList.add('post-content');
+            const postTextElement = document.createElement('p');
+            postTextElement.textContent = post.text;
+            postContent.appendChild(postTextElement);
+
+            // Add images to the post
+            if (post.images && post.images.length > 0) {
+                const imageGrid = document.createElement('div');
+                imageGrid.classList.add('image-preview-grid', `grid-${post.images.length}`);
+        
+                post.images.forEach(image => {
+                    const imgContainer = document.createElement('div');
+                    const imgElement = document.createElement('img');
+                    imgElement.src = image;
+                    imgElement.alt = 'Post Image';
+                    imgElement.addEventListener('click', () => {
+                        showModal(image);
+                    });
+                    imgContainer.appendChild(imgElement);
+                    imageGrid.appendChild(imgContainer);
+                });
+        
+                postContent.appendChild(imageGrid);
+            }            
+
+            const postFooter = document.createElement('div');
+            postFooter.classList.add('post-footer');
+            const postDate = document.createElement('span');
+            postDate.textContent = formatDate(new Date(post.timestamp));
+            postFooter.appendChild(postDate);
+
+            postElement.appendChild(postHeader);
+            postElement.appendChild(postContent);
+            postElement.appendChild(postFooter);
+            
+            // Add delete button to post
+            const deleteBtn = document.createElement('button');
+            deleteBtn.classList.add('delete-post-btn');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to delete this post?')) {
+                    deletePost(username, post.id);
+                    loadPosts(username); // Reload posts after deletion
+                }
+            });
+            postFooter.appendChild(deleteBtn);
+
+            // ... (Rest of the loadPosts function) ...
+
+            // Comments
+            const commentsElement = document.createElement('div');
+            commentsElement.classList.add('comments');
+
+            // Generate AI comments only if the post hasn't been commented on
+            if (!post.commented) {
+                for (let i = 0; i < 3; i++) {
+                    const robotName = names[Math.floor(Math.random() * names.length)];
+                    const personality = userProfile.personality || 'supporter';
+                    const prompt = prompts[personality];
+                    const commentText = await generateComment(post.text, prompt, robotName);
+
+                    const comment = {
+                        name: robotName,
+                        text: commentText,
+                        avatar: `img/avatar${Math.floor(Math.random() * 5) + 1}.jpg` // Assuming you have avatar images named avatar1.jpg, avatar2.jpg, etc.
+                    };
+                    post.comments.push(comment);
+                }
+                // Mark the post as commented
+                post.commented = true;
+                updatePost(username, post);
+            }
+
+            // Display comments
+            post.comments.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.classList.add('comment');
+                const commentHeader = document.createElement('div');
+                commentHeader.classList.add('comment-header');
+                const commentAvatar = document.createElement('img');
+                commentAvatar.src = comment.avatar;
+                commentAvatar.alt = 'Commenter Avatar';
+                const commentName = document.createElement('span');
+                commentName.textContent = comment.name;
+                commentHeader.appendChild(commentAvatar);
+                commentHeader.appendChild(commentName);
+                const commentTextElement = document.createElement('p');
+                commentTextElement.textContent = comment.text;
+                commentElement.appendChild(commentHeader);
+                commentElement.appendChild(commentTextElement);
+                commentsElement.appendChild(commentElement);
+            });
+
+            postElement.appendChild(commentsElement);
+            feed.prepend(postElement); // Add new posts to the top
+        });
+    }
+
+    // Function to show large image modal
+    function showModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        modal.style.display = 'block';
+        modalImg.src = imageSrc;
+    }
+
+    // Function to close large image modal (Corrected)
+    function closeModal() {
+        const modal = document.getElementById('imageModal');
+        modal.style.display = 'none';
+    }
+
+    // Add event listener to close modal button
+    const closeModalBtn = document.querySelector('.close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+});

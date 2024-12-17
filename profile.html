@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Social - Profile</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>AI Social</h1>
+        <nav>
+            <ul>
+                <li><a href="home.html">Home</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container" id="profileContainer">
+            <div class="profile-info">
+                <img id="profileAvatar" src="img/default-avatar.png" alt="Profile Picture">
+                <h2 id="profileName"></h2>
+                <input type="file" id="avatarInput" accept="image/*">
+                <input type="text" id="nameInput" placeholder="Enter your name">
+                <button id="saveProfileBtn">Save Profile</button>
+            </div>
+            <div class="personality-settings">
+                <h3>Personality Settings</h3>
+                <select id="personalitySelect">
+                    <option value="supporter">Supporter</option>
+                    <option value="fan">Fan</option>
+                    <option value="optimist">Optimist</option>
+                    <option value="cheerleader">Cheerleader</option>
+                    <option value="thinker">Thinker</option>
+                    <option value="ideator">Ideator</option>
+                    <option value="visionary">Visionary</option>
+                    <option value="highIQ">High IQ</option>
+                </select>
+                <button id="savePersonalityBtn">Save Personality</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
