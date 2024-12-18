@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const imagePreview = document.getElementById('imagePreview');
     const selectImagesBtn = document.getElementById('selectImagesBtn');
 
+    // 用于存储所有选中的文件
+    let selectedFiles = [];
+
     // Event Listeners for Login/Registration
     if (showRegisterBtn) {
         showRegisterBtn.addEventListener('click', () => {
@@ -83,39 +86,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listener for Post Button
     if (postBtn) {
-        postBtn.addEventListener('click', () => {
+        postBtn.addEventListener('click', async () => {
             const text = postText.value;
-            const files = postImage.files;
             const images = [];
 
-            if (files.length > 0) {
+            if (selectedFiles.length > 0) {
                 const readerPromises = [];
 
-                for (let i = 0; i < Math.min(files.length, 9); i++) {
+                for (let i = 0; i < Math.min(selectedFiles.length, 9); i++) {
                     const reader = new FileReader();
-                    readerPromises.push(new Promise(resolve => {
-                        reader.onload = (e) => {
-                            images.push(e.target.result);
-                            resolve();
-                        };
-                        reader.readAsDataURL(files[i]);
-                    }));
+                    readerPromises.push(
+                        new Promise((resolve) => {
+                            reader.onload = (e) => {
+                                images.push(e.target.result);
+                                resolve();
+                            };
+                            reader.readAsDataURL(selectedFiles[i]);
+                        })
+                    );
                 }
 
-                Promise.all(readerPromises).then(() => {
-                    // Call createPost *after* images are loaded
-                    createPost(currentUser, text, images);
-                    postText.value = '';
-                    postImage.value = '';
-                    imagePreview.innerHTML = ''; // Clear preview after posting
-                    imagePreview.className = 'image-preview-grid';
-                    loadPosts(currentUser);
-                });
-            } else {
-                createPost(currentUser, text, images);
-                postText.value = '';
-                loadPosts(currentUser);
+                await Promise.all(readerPromises);
             }
+
+            // 现在使用 images 数组，其中包含了所有选定文件的 base64 数据
+            createPost(currentUser, text, images);
+            postText.value = '';
+            postImage.value = '';
+            selectedFiles = []; // 清空已选择的文件
+            imagePreview.innerHTML = ''; // Clear preview after posting
+            imagePreview.className = 'image-preview-grid';
+            loadPosts(currentUser);
         });
     }
 
@@ -165,23 +166,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (postImage) {
         postImage.addEventListener('change', () => {
-            imagePreview.innerHTML = '';
-            const files = postImage.files;
-            const numFiles = Math.min(files.length, 9);
-            imagePreview.className = `image-preview-grid grid-${numFiles}`;
+            const newFiles = Array.from(postImage.files); // 获取新选择的文件
+            selectedFiles = selectedFiles.concat(newFiles); // 将新文件追加到 selectedFiles 数组
 
-            for (let i = 0; i < numFiles; i++) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const imgContainer = document.createElement('div');
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    imgContainer.appendChild(img);
-                    imagePreview.appendChild(imgContainer);
-                };
-                reader.readAsDataURL(files[i]);
-            }
+            updateImagePreview(); // 更新图片预览
+
+            // 清空 input 元素的值，以便下次可以选择相同的文件
+            postImage.value = '';
         });
+    }
+
+    // 更新图片预览区域
+    function updateImagePreview() {
+        imagePreview.innerHTML = ''; // 清空预览
+        const numFiles = Math.min(selectedFiles.length, 9);
+        imagePreview.className = `image-preview-grid grid-${numFiles}`;
+
+        for (let i = 0; i < numFiles; i++) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imgContainer = document.createElement('div');
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                imgContainer.appendChild(img);
+                imagePreview.appendChild(imgContainer);
+            };
+            reader.readAsDataURL(selectedFiles[i]);
+        }
     }
 
     // Load Posts into Feed
