@@ -6,14 +6,8 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
-async function loadNames() {
-    const response = await fetch('data/names.json');
-    const data = await response.json();
-    return data.names;
-}
-
 async function loadPrompts() {
     const response = await fetch('data/prompts.json');
     const data = await response.json();
-    return data.prompts;
+    return data;
 }

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const personalitySelect = document.getElementById('personalitySelect');
     const savePersonalityBtn = document.getElementById('savePersonalityBtn');
     const imagePreview = document.getElementById('imagePreview');
+    const selectImagesBtn = document.getElementById('selectImagesBtn');
 
     // Event Listeners for Login/Registration
     if (showRegisterBtn) {
@@ -86,10 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = postText.value;
             const files = postImage.files;
             const images = [];
-    
+
             if (files.length > 0) {
                 const readerPromises = [];
-    
+
                 for (let i = 0; i < Math.min(files.length, 9); i++) {
                     const reader = new FileReader();
                     readerPromises.push(new Promise(resolve => {
@@ -100,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         reader.readAsDataURL(files[i]);
                     }));
                 }
-    
+
                 Promise.all(readerPromises).then(() => {
                     // Call createPost *after* images are loaded
                     createPost(currentUser, text, images);
@@ -156,6 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle image preview
+    if (selectImagesBtn) {
+        selectImagesBtn.addEventListener('click', () => {
+            postImage.click(); // 触发隐藏的 input 元素的点击事件
+        });
+    }
+
     if (postImage) {
         postImage.addEventListener('change', () => {
             imagePreview.innerHTML = '';
@@ -180,8 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load Posts into Feed
     async function loadPosts(username) {
         const posts = getPosts(username);
-        const names = await loadNames(); // Load robot names
-        const prompts = await loadPrompts(); // Load personality prompts
+        const robots = await loadPrompts(); // Load robot data
         feed.innerHTML = ''; // Clear existing posts
 
         posts.forEach(async (post) => {
@@ -209,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (post.images && post.images.length > 0) {
                 const imageGrid = document.createElement('div');
                 imageGrid.classList.add('image-preview-grid', `grid-${post.images.length}`);
-        
+
                 post.images.forEach(image => {
                     const imgContainer = document.createElement('div');
                     const imgElement = document.createElement('img');
@@ -221,9 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     imgContainer.appendChild(imgElement);
                     imageGrid.appendChild(imgContainer);
                 });
-        
+
                 postContent.appendChild(imageGrid);
-            }            
+            }
 
             const postFooter = document.createElement('div');
             postFooter.classList.add('post-footer');
@@ -234,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             postElement.appendChild(postHeader);
             postElement.appendChild(postContent);
             postElement.appendChild(postFooter);
-            
+
             // Add delete button to post
             const deleteBtn = document.createElement('button');
             deleteBtn.classList.add('delete-post-btn');
@@ -247,24 +253,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             postFooter.appendChild(deleteBtn);
 
-            // ... (Rest of the loadPosts function) ...
-
             // Comments
             const commentsElement = document.createElement('div');
             commentsElement.classList.add('comments');
 
             // Generate AI comments only if the post hasn't been commented on
             if (!post.commented) {
+                const selectedRobots = []; // Array to store selected robots
+                while (selectedRobots.length < 3) {
+                    const randomIndex = Math.floor(Math.random() * robots.robots.length);
+                    const robot = robots.robots[randomIndex];
+
+                    // Check if the robot is already selected
+                    if (!selectedRobots.includes(robot)) {
+                        selectedRobots.push(robot);
+                    }
+                }
+
                 for (let i = 0; i < 3; i++) {
-                    const robotName = names[Math.floor(Math.random() * names.length)];
-                    const personality = userProfile.personality || 'supporter';
-                    const prompt = prompts[personality];
-                    const commentText = await generateComment(post.text, prompt, robotName);
+                    const robot = selectedRobots[i];
+                    const commentText = await generateComment(post.text, robot.prompt, robot.name);
 
                     const comment = {
-                        name: robotName,
+                        name: robot.name,
                         text: commentText,
-                        avatar: `img/avatar${Math.floor(Math.random() * 5) + 1}.jpg` // Assuming you have avatar images named avatar1.jpg, avatar2.jpg, etc.
+                        avatar: robot.avatar
                     };
                     post.comments.push(comment);
                 }

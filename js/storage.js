@@ -77,8 +77,6 @@ function deletePost(username, postId) {
     }
 }
 
-// ... (Rest of storage.js code) ...
-
 function getUserProfile(username) {
     const users = getUsers();
     return users[username] ? users[username].profile : {};
@@ -95,7 +93,6 @@ function updateProfile(username, newName, newAvatar) {
     }
 }
 
-// storage.js (Continued)
 function updatePersonality(username, personality) {
     const users = getUsers();
     if (users[username]) {

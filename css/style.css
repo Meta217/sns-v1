@@ -172,8 +172,6 @@ button:hover {
     }
 }
 
-/* ... (Previous styles) ... */
-
 /* Image Preview Grid */
 .image-preview-grid {
     display: grid;
@@ -249,7 +247,6 @@ button:hover {
     text-decoration: none;
 }
 
-/* ... (Previous code in style.css) ... */
 .delete-post-btn {
     background-image: linear-gradient(to right, #FF626E 0%, #FFBE71 100%);
     color: #fff;

@@ -1,12 +1,79 @@
 {
-    "prompts": {
-        "supporter": "一个乐于助人且友善的支持者",
-        "fan": "一个热情的粉丝",
-        "optimist": "一个积极乐观的人",
-        "cheerleader": "一个充满活力的拉拉队员",
-        "thinker": "一个有思想的思考者",
-        "ideator": "一个充满创意的点子王",
-        "visionary": "一个有远见的梦想家",
-        "highIQ": "一个智商很高的顾问"
-    }
+    "robots": [
+        {
+            "name": "丸山彩",
+            "prompt": "一个乐于助人且友善的支持者",
+            "avatar": "img/avatar1.jpg"
+        },
+        {
+            "name": "冰川日菜",
+            "prompt": "一个热情的粉丝",
+            "avatar": "img/avatar2.jpg"
+        },
+        {
+            "name": "白鹭千圣",
+            "prompt": "一个积极乐观的人",
+            "avatar": "img/avatar3.jpg"
+        },
+        {
+            "name": "大和麻弥",
+            "prompt": "一个充满活力的拉拉队员",
+            "avatar": "img/avatar4.jpg"
+        },
+        {
+            "name": "若宫伊芙",
+            "prompt": "一个有思想的思考者",
+            "avatar": "img/avatar5.jpg"
+        },
+        {
+            "name": "高松灯",
+            "prompt": "一个充满创意的点子王",
+            "avatar": "img/avatar6.jpg"
+        },
+        {
+            "name": "千早爱音",
+            "prompt": "一个有远见的梦想家",
+            "avatar": "img/avatar7.jpg"
+        },
+        {
+            "name": "要乐奈",
+            "prompt": "一个智商很高的顾问",
+            "avatar": "img/avatar8.jpg"
+        },
+        {
+            "name": "长崎爽世",
+            "prompt": "一个乐于助人且友善的支持者",
+            "avatar": "img/avatar9.jpg"
+        },
+        {
+            "name": "椎名立希",
+            "prompt": "一个热情的粉丝",
+            "avatar": "img/avatar10.jpg"
+        },
+        {
+            "name": "户山香澄",
+            "prompt": "一个积极乐观的人",
+            "avatar": "img/avatar11.jpg"
+        },
+        {
+            "name": "花园多惠",
+            "prompt": "一个充满活力的拉拉队员",
+            "avatar": "img/avatar12.jpg"
+        },
+        {
+            "name": "牛込里美",
+            "prompt": "一个有思想的思考者",
+            "avatar": "img/avatar13.jpg"
+        },
+        {
+            "name": "山吹沙绫",
+            "prompt": "一个充满创意的点子王",
+            "avatar": "img/avatar14.jpg"
+        },
+        {
+            "name": "市谷有咲",
+            "prompt": "一个有远见的梦想家",
+            "avatar": "img/avatar15.jpg"
+        }
+    ]
 }
