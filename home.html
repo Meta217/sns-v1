@@ -7,26 +7,46 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-        <h1>AI Social</h1>
-        <nav>
-            <ul>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="#" id="logoutBtn">Logout</a></li>
+    <div class="sidebar">
+        <div class="hamburger">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-wallpaper">
+                <img id="sidebarWallpaper" src="img/default-wallpaper.jpg" alt="Wallpaper">
+                <input type="file" id="wallpaperInput" accept="image/*" style="display: none;">
+            </div>
+            <div class="sidebar-user">
+                <img id="sidebarAvatar" src="img/default-avatar.png" alt="User Avatar">
+                <span id="sidebarUsername"></span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="home.html"><i class="fas fa-home"></i> 主页</a></li> 
+                <li><a href="profile.html"><i class="fas fa-user"></i> 个人资料</a></li>
+                <li><a href="calendar.html"><i class="fas fa-calendar-alt"></i> 日历</a></li>
+                <li><a href="feedback.html"><i class="fas fa-comment-alt"></i> 反馈</a></li>
+                <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 登出</a></li>
             </ul>
-        </nav>
+        </div>
+    </div>
+
+    <header>
+        <h1 id="greeting">AI Social</h1>
     </header>
 
     <main>
         <div class="container" id="postContainer">
             <div class="post-form">
                 <textarea id="postText" placeholder="What's on your mind?"></textarea>
-                <button type="button" id="selectImagesBtn">选择图片</button> <input type="file" id="postImage" accept="image/*" multiple style="display: none;">
+                <button type="button" id="selectImagesBtn">选择图片</button>
+                <input type="file" id="postImage" accept="image/*" multiple style="display: none;">
                 <div id="imagePreview" class="image-preview-grid"></div>
                 <button id="postBtn">Post</button>
             </div>
             <div id="feed">
-                </div>
+            </div>
         </div>
         <div id="imageModal" class="modal">
             <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -34,6 +54,7 @@
         </div>
     </main>
 
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit-id.js" crossorigin="anonymous"></script>
     <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/ai.js"></script>

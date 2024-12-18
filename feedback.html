@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Social - Feedback</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="hamburger">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-wallpaper">
+                <img id="sidebarWallpaper" src="img/default-wallpaper.jpg" alt="Wallpaper">
+                <input type="file" id="wallpaperInput" accept="image/*" style="display: none;">
+            </div>
+            <div class="sidebar-user">
+                <img id="sidebarAvatar" src="img/default-avatar.png" alt="User Avatar">
+                <span id="sidebarUsername"></span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="home.html"><i class="fas fa-home"></i> 主页</a></li> 
+                <li><a href="profile.html"><i class="fas fa-user"></i> 个人资料</a></li>
+                <li><a href="calendar.html"><i class="fas fa-calendar-alt"></i> 日历</a></li>
+                <li><a href="feedback.html"><i class="fas fa-comment-alt"></i> 反馈</a></li>
+                <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 登出</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <header>
+        <h1 id="greeting">AI Social</h1>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>Feedback</h2>
+            <img src="img/feedback-qrcode.png" alt="Feedback QR Code">
+        </div>
+    </main>
+
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit-id.js" crossorigin="anonymous"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
