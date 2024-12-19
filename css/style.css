@@ -1,7 +1,7 @@
 /* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-image: linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%);
+    background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
     margin: 0;
     padding: 0;
 }
@@ -26,7 +26,7 @@ h1, h2, h3 {
 
 /* Header */
 header {
-    background: linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%);
+    background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
     color: #fff;
     padding: 10px 20px; /* Add padding */
     text-align: center;
@@ -94,7 +94,7 @@ button:hover {
 
 /* Feed */
 .post {
-    background: linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%);
+    background: linear-gradient(to top, #ebbba7 0%, #cfc7f8 100%);
     border: 1px solid #ddd;
     margin-bottom: 20px;
     border-radius: 5px;
