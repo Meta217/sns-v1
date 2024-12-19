@@ -406,11 +406,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (greeting) {
             const hour = new Date().getHours();
             if (hour >= 5 && hour < 12) {
-                greeting.textContent = 'Good Morning, ' + (userProfile.name || username);
+                greeting.textContent = '上午好, ' + (userProfile.name || username);
             } else if (hour >= 12 && hour < 18) {
-                greeting.textContent = 'Good Afternoon, ' + (userProfile.name || username);
+                greeting.textContent = '下午好, ' + (userProfile.name || username);
             } else {
-                greeting.textContent = 'Good Evening, ' + (userProfile.name || username);
+                greeting.textContent = '晚上好, ' + (userProfile.name || username);
             }
         }
     }
