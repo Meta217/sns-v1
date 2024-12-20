@@ -173,17 +173,107 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (postImage) {
-        postImage.addEventListener('change', () => {
-            const newFiles = Array.from(postImage.files); // 获取新选择的文件
-            selectedFiles = selectedFiles.concat(newFiles); // 将新文件追加到 selectedFiles 数组
+    // 设置图片大小限制（单位：字节）
+    const MAX_IMAGE_SIZE = 0.3 * 1024 * 1024; // 0.3MB（300KB）
 
-            updateImagePreview(); // 更新图片预览
+    // 将 File 对象转换为压缩后的图片（Base64 格式），并限制最终大小
+    async function compressImageUntilSize(file, maxSize = MAX_IMAGE_SIZE, maxWidth = 800, maxHeight = 800) {
+        let compressedFile = file;
+        let quality = 0.8; // 初始压缩质量，范围为 0（最差）到 1（最佳）
+
+        while (compressedFile.size > maxSize) {
+            compressedFile = await compressImage(compressedFile, maxWidth, maxHeight, quality);
+            quality -= 0.1; // 逐步降低质量
+            if (quality <= 0) break; // 如果质量太低，则终止压缩，避免无限循环
+        }
+
+        return compressedFile;
+    }
+
+    // 压缩图片的核心函数
+    function compressImage(file, maxWidth, maxHeight, quality) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 按比例调整图片尺寸，确保图片不会超过最大宽高
+                    if (width > maxWidth || height > maxHeight) {
+                        if (width / height > maxWidth / maxHeight) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        } else {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    // 设置 Canvas 尺寸并绘制图片
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 将 Canvas 内容转换为 Blob 数据，指定压缩质量
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                // 将 Blob 转换为 File 对象
+                                const compressedFile = new File([blob], file.name, { type: file.type });
+                                resolve(compressedFile);
+                            } else {
+                                reject(new Error('图片压缩失败'));
+                            }
+                        },
+                        file.type,
+                        quality
+                    );
+                };
+
+                img.onerror = (error) => reject(error);
+            };
+
+            reader.onerror = (error) => reject(error);
+        });
+    }
+
+    // 监听图片选择事件
+    if (postImage) {
+        postImage.addEventListener('change', async () => {
+            const newFiles = Array.from(postImage.files); // 获取新选择的文件
+
+            for (let file of newFiles) {
+                if (file.size > MAX_IMAGE_SIZE) {
+                    try {
+                        // 如果图片大小超过限制，进行压缩，直到满足大小要求
+                        const compressedFile = await compressImageUntilSize(file);
+                        selectedFiles.push(compressedFile); // 添加压缩后的文件
+                    } catch (error) {
+                        console.error('图片压缩失败:', error);
+                        alert('图片压缩失败，请重试！');
+                    }
+                } else {
+                    // 如果图片大小在限制范围内，直接添加
+                    selectedFiles.push(file);
+                }
+            }
+
+            updateImagePreview(); // 更新图片预览区域
 
             // 清空 input 元素的值，以便下次可以选择相同的文件
             postImage.value = '';
         });
-    }
+    }    
+
 
     // 更新图片预览区域
     function updateImagePreview() {
