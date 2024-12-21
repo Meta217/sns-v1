@@ -14,7 +14,7 @@ async function generateComment(postText, personalityPrompt, robotName) {
             body: JSON.stringify({
                 model: "moonshot-v1-8k",
                 messages: [
-                    { role: "system", content: "你更擅长中文对话。现在请你进行角色扮演，你是发布帖子的用户的关注者或者朋友，并根据帖子的内容进行回复，请注意，每次回复的字数不超过100个字。" },
+                    { role: "system", content: "你更擅长中文对话。现在请你进行角色扮演，你是发布帖子的用户的关注者或者朋友，并根据帖子的内容进行多样性的单次回复，请注意，每次回复的字数不超过100个字。" },
                     { role: "user", content: prompt }
                 ],
                 temperature: 0.3

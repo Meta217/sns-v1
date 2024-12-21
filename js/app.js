@@ -42,9 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
+        loginBtn.addEventListener('click', async () => { // 添加 async
             const username = loginUsernameInput.value;
-            if (loginUser(username)) {
+            if (await loginUser(username)) { // 添加 await
                 window.location.href = 'home.html';
             } else {
                 alert('User not found.');
@@ -53,9 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (registerBtn) {
-        registerBtn.addEventListener('click', () => {
+        registerBtn.addEventListener('click', async () => { // 添加 async
             const username = registerUsernameInput.value;
-            if (registerUser(username)) {
+            if (await registerUser(username)) { // 添加 await
                 window.location.href = 'home.html';
             } else {
                 alert('Username already exists.');
@@ -75,12 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentUser = getCurrentUser();
     if (currentUser) {
         if (feed) {
-            loadPosts(currentUser);
+            loadPosts(currentUser); // 异步函数，需要修改调用方式
         }
         if (profileAvatar) {
-            loadProfile(currentUser);
+            loadProfile(currentUser); // 异步函数，需要修改调用方式
         }
-        loadSidebar(currentUser);
+        loadSidebar(currentUser); // 异步函数，需要修改调用方式
     } else if (!window.location.pathname.endsWith('index.html')) {
         window.location.href = 'index.html';
     }
@@ -111,47 +111,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 现在使用 images 数组，其中包含了所有选定文件的 base64 数据
-            createPost(currentUser, text, images);
+            await createPost(currentUser, text, images); // 添加 await
             postText.value = '';
             postImage.value = '';
             selectedFiles = []; // 清空已选择的文件
             imagePreview.innerHTML = ''; // Clear preview after posting
             imagePreview.className = 'image-preview-grid';
-            loadPosts(currentUser);
+            await loadPosts(currentUser); // 添加 await, 重新加载帖子列表
         });
     }
 
     // Event Listener for Profile Save Button
     if (saveProfileBtn) {
-        saveProfileBtn.addEventListener('click', () => {
+        saveProfileBtn.addEventListener('click', async () => { // 添加 async
             const newName = nameInput.value;
             const newAvatar = avatarInput.files[0];
 
             if (newAvatar) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    updateProfile(currentUser, newName, e.target.result);
-                    loadProfile(currentUser);
+                reader.onload = async (e) => { // 添加 async
+                    await updateProfile(currentUser, newName, e.target.result); // 添加 await
+                    await loadProfile(currentUser); // 添加 await
                 }
                 reader.readAsDataURL(newAvatar);
             } else {
-                updateProfile(currentUser, newName, null);
-                loadProfile(currentUser);
+                await updateProfile(currentUser, newName, null); // 添加 await
+                await loadProfile(currentUser); // 添加 await
             }
         });
     }
 
     // Event Listener for Personality Save Button
     if (savePersonalityBtn) {
-        savePersonalityBtn.addEventListener('click', () => {
+        savePersonalityBtn.addEventListener('click', async () => { // 添加 async
             const selectedPersonality = personalitySelect.value;
-            updatePersonality(currentUser, selectedPersonality);
+            await updatePersonality(currentUser, selectedPersonality); // 添加 await
         });
     }
 
     // Load Profile Data
-    function loadProfile(username) {
-        const userProfile = getUserProfile(username);
+    async function loadProfile(username) { // 添加 async
+        const userProfile = await getUserProfile(username); // 添加 await
         if (profileName) {
             profileName.textContent = userProfile.name || username;
         }
@@ -295,39 +295,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load Posts into Feed
-    async function loadPosts(username) {
-        const posts = getPosts(username);
+    async function loadPosts(username) { // 添加 async
+        let posts = await getPosts(username); // 添加 await
         const robots = await loadPrompts(); // Load robot data
+
+        // posts.sort((a, b) => b.id - a.id); // 按照 id 属性进行降序排序，即最新的帖子（id 最大）排在最前面
+
         if (feed) {
             feed.innerHTML = ''; // Clear existing posts
 
-            posts.forEach(async (post) => {
+            // 使用 Promise.all 等待所有帖子的评论生成完成
+            for (const post of posts) { // 使用 for...of 循环
                 // ... (postElement creation) ...
                 const postElement = document.createElement('div');
                 postElement.classList.add('post');
-    
+
                 const postHeader = document.createElement('div');
                 postHeader.classList.add('post-header');
                 const avatarImg = document.createElement('img');
-                const userProfile = getUserProfile(username);
+                const userProfile = await getUserProfile(username); // 添加 await
                 avatarImg.src = userProfile.avatar || 'img/default-avatar.png';
                 avatarImg.alt = 'User Avatar';
                 const usernameElement = document.createElement('span');
                 usernameElement.textContent = userProfile.name || username;
                 postHeader.appendChild(avatarImg);
                 postHeader.appendChild(usernameElement);
-    
+
                 const postContent = document.createElement('div');
                 postContent.classList.add('post-content');
                 const postTextElement = document.createElement('p');
                 postTextElement.textContent = post.text;
                 postContent.appendChild(postTextElement);
-    
+
                 // Add images to the post
                 if (post.images && post.images.length > 0) {
                     const imageGrid = document.createElement('div');
                     imageGrid.classList.add('image-preview-grid', `grid-${post.images.length}`);
-    
+
                     post.images.forEach(image => {
                         const imgContainer = document.createElement('div');
                         const imgElement = document.createElement('img');
@@ -339,27 +343,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         imgContainer.appendChild(imgElement);
                         imageGrid.appendChild(imgContainer);
                     });
-    
+
                     postContent.appendChild(imageGrid);
                 }
-    
+
                 const postFooter = document.createElement('div');
                 postFooter.classList.add('post-footer');
                 const postDate = document.createElement('span');
                 postDate.textContent = formatDate(new Date(post.timestamp));
                 postFooter.appendChild(postDate);
-    
+
                 postElement.appendChild(postHeader);
                 postElement.appendChild(postContent);
-                postElement.appendChild(postFooter); 
+                postElement.appendChild(postFooter);
                 // Add delete button to post
                 const deleteBtn = document.createElement('button');
                 deleteBtn.classList.add('delete-post-btn');
                 deleteBtn.textContent = 'Delete';
-                deleteBtn.addEventListener('click', () => {
+                deleteBtn.addEventListener('click', async () => { // 添加 async
                     if (confirm('Are you sure you want to delete this post?')) {
-                        deletePost(username, post.id);
-                        loadPosts(username); // Reload posts after deletion
+                        await deletePost(username, post.id); // 添加 await
+                        await loadPosts(username); // 添加 await, 重新加载帖子列表
                     }
                 });
                 postFooter.appendChild(deleteBtn);
@@ -381,8 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
-                    for (let i = 0; i < 3; i++) {
-                        const robot = selectedRobots[i];
+                    // 使用 Promise.all 等待所有机器人的评论生成完成
+                    for (const robot of selectedRobots) {
                         const commentText = await generateComment(post.text, robot.prompt, robot.name);
 
                         const comment = {
@@ -392,9 +396,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                         post.comments.push(comment);
                     }
+
                     // Mark the post as commented
                     post.commented = true;
-                    updatePost(username, post);
+                    await updatePost(username, post); // 添加 await
                 }
 
                 // Display comments
@@ -418,10 +423,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 postElement.appendChild(commentsElement);
-                if (feed) {
-                    feed.prepend(postElement); // Add new posts to the top
-                }
-            });
+                feed.prepend(postElement); // 在循环内部添加帖子
+            }
         }
     }    
 
@@ -457,8 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Load sidebar data
-    function loadSidebar(username) {
-        const userProfile = getUserProfile(username);
+    async function loadSidebar(username) {
+        const userProfile = await getUserProfile(username);
         const sidebarAvatar = document.getElementById('sidebarAvatar');
         const sidebarUsername = document.getElementById('sidebarUsername');
         const sidebarWallpaper = document.getElementById('sidebarWallpaper');
@@ -478,13 +481,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (wallpaperInput) {
-            wallpaperInput.addEventListener('change', () => {
+            wallpaperInput.addEventListener('change', async () => {
                 const file = wallpaperInput.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (e) => {
+                    reader.onload = async (e) => {
                         sidebarWallpaper.src = e.target.result;
-                        updateWallpaper(username, e.target.result); // Function to update wallpaper in storage
+                        await updateWallpaper(username, e.target.result); // Function to update wallpaper in storage
                     };
                     reader.readAsDataURL(file);
                 }
@@ -506,20 +509,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Function to update wallpaper in storage
-    function updateWallpaper(username, wallpaper) {
-        const users = getUsers();
-        if (users[username]) {
-            users[username].profile.wallpaper = wallpaper;
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-    }
 
     // Calendar functionality (for calendar.html)
     if (window.location.pathname.endsWith('calendar.html')) {
-        loadCalendar();
+        loadCalendar(); // 异步函数，需要修改调用方式
     }
 
-    function loadCalendar() {
+    async function loadCalendar() {
         const calendarElement = document.getElementById('calendar');
         const postListElement = document.getElementById('postList');
         const postsOnDateElement = document.getElementById('postsOnDate');
@@ -530,13 +526,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
 
-            generateCalendar(currentYear, currentMonth, calendarElement);
+            await generateCalendar(currentYear, currentMonth, calendarElement);
 
-            calendarElement.addEventListener('click', (event) => {
+            calendarElement.addEventListener('click', async (event) => {
                 if (event.target.classList.contains('has-posts')) {
                     const clickedDate = event.target.dataset.date;
                     selectedDateElement.textContent = clickedDate;
-                    const userPosts = getPosts(currentUser);
+                    const userPosts = await getPosts(currentUser);
                     const postsOnClickedDate = userPosts.filter(post => {
                         const postDate = new Date(post.timestamp);
                         const formattedPostDate = `${postDate.getFullYear()}-${(postDate.getMonth() + 1).toString().padStart(2, '0')}-${postDate.getDate().toString().padStart(2, '0')}`;
@@ -549,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function generateCalendar(year, month, calendarElement) {
+    async function generateCalendar(year, month, calendarElement) {
         calendarElement.innerHTML = '';
 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -570,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarElement.appendChild(emptyDay);
         }
 
-        const userPosts = getPosts(currentUser);
+        const userPosts = await getPosts(currentUser);
 
         for (let i = 1; i <= daysInMonth; i++) {
             const dateElement = document.createElement('div');
